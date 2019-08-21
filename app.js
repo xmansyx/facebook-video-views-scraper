@@ -27,8 +27,19 @@ app.get("/videoViews", (req, res) => {
     return request(options)
         .then((videoPage) => {
             console.log(id);
-            viewsCount = videoPage.match(/<div class="_1vx9"><span>(.*?)<\/span>/)[1];
-            res.send("this video has " + viewsCount);
+            viewsCount = videoPage.match(/<div class="_1vx9"><span>(.*?)<\/span>/)[1].replace(/[a-zA-Z]/g, '');
+            commentsCount = videoPage.match(/comment_count:{total_count:(.*?)},/)[1];
+            sharesCount = videoPage.match(/share_count:{count:(.*?)},/)[1];
+            totalReactionsCount = videoPage.match(/reaction_count:{count:(.*?)},/)[1];
+            //reactionsInJSON = JSON.parse(reactionsString);
+            res.send(
+                `views :${viewsCount}
+                comments: ${commentsCount}
+                shares: ${sharesCount}
+                total reactions : ${totalReactionsCount}`
+            );
+            console.log(likesCount);
+            //res.send("video views:  " + viewsCount);
 
         })
         .catch((err) => {
