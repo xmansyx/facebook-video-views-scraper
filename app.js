@@ -28,8 +28,8 @@ app.get("/videoViews", (req, res) => {
         .then((videoPage) => {
             console.log(id);
             var fullData = { "reactions": {}, "comments": {}, "shares": {}, "views": {} };
-            viewsCount = videoPage.match(/<div class="_1vx9"><span>(.*?)<\/span>/)[1].replace(/[a-zA-Z]/g, '');
-            fullData["views"]["count"] = viewsCount;
+            viewsCount = videoPage.match(/<div class="_1vx9"><span(.*?)<\/span><\/div><\/div>/)[1].replace(/[a-zA-Z]|,/g, '');
+            fullData["views"]["count"] = viewsCount.match(/(\d+)(?!.*\d)/g)[0];
 
             commentsCount = videoPage.match(/comment_count:{total_count:(.*?)},/)[1];
             fullData["comments"]["count"] = commentsCount;
@@ -39,15 +39,13 @@ app.get("/videoViews", (req, res) => {
 
             totalReactionsCount = videoPage.match(/reaction_count:{count:(.*?)},/)[1];
             fullData["reactions"]["count"] = totalReactionsCount;
-            
+
             topReacttions = videoPage.match(/top_reactions:(.*?),associated_video/)[1].replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ');
             topReactionsJson = JSON.parse(topReacttions);
 
-            topReactionsJson["edges"].forEach((reaction, i) => {
+            topReactionsJson["edges"].forEach((reaction) => {
                 fullData["reactions"][reaction.node.reaction_type] = reaction.reaction_count;
-                console.log();
             });
-
             res.send(fullData)
         })
         .catch((err) => {
